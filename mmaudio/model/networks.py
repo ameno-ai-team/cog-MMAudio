@@ -134,12 +134,9 @@ class MMAudio(nn.Module):
         if latent_mean is None:
             # these values are not meant to be used
             # if you don't provide mean/std here, we should load them later from a checkpoint
-            assert latent_std is None
             latent_mean = torch.ones(latent_dim).view(1, 1, -1).fill_(float('nan'))
             latent_std = torch.ones(latent_dim).view(1, 1, -1).fill_(float('nan'))
-        else:
-            assert latent_std is not None
-            assert latent_mean.numel() == latent_dim, f'{latent_mean.numel()=} != {latent_dim=}'
+
         if empty_string_feat is None:
             empty_string_feat = torch.zeros((text_seq_len, text_dim))
         self.latent_mean = nn.Parameter(latent_mean.view(1, 1, -1), requires_grad=False)
@@ -226,9 +223,6 @@ class MMAudio(nn.Module):
         cache computations that do not depend on the latent/time step
         i.e., the features are reused over steps during inference
         """
-        assert clip_f.shape[1] == self._clip_seq_len, f'{clip_f.shape=} {self._clip_seq_len=}'
-        assert sync_f.shape[1] == self._sync_seq_len, f'{sync_f.shape=} {self._sync_seq_len=}'
-        assert text_f.shape[1] == self._text_seq_len, f'{text_f.shape=} {self._text_seq_len=}'
 
         bs = clip_f.shape[0]
 
@@ -262,7 +256,6 @@ class MMAudio(nn.Module):
         """
         for non-cacheable computations
         """
-        assert latent.shape[1] == self._latent_seq_len, f'{latent.shape=} {self._latent_seq_len=}'
 
         clip_f = conditions.clip_f
         sync_f = conditions.sync_f

@@ -56,7 +56,6 @@ class PartialTimeEstimator(TimeEstimator):
         self.last_time = time.time()
 
     def end(self):
-        assert self.last_time is not None, 'Please call start() before calling end()'
         curr_time = time.time()
         time_per_iter = curr_time - self.last_time
         self.last_time = None

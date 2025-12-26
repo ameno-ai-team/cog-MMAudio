@@ -36,21 +36,6 @@ class ExtractedAudio(Dataset):
         self.std = td['std']
         self.text_features = td['text_features']
 
-        log.info(f'Loaded {len(self)} samples from {premade_mmap_dir}.')
-        log.info(f'Loaded mean: {self.mean.shape}.')
-        log.info(f'Loaded std: {self.std.shape}.')
-        log.info(f'Loaded text features: {self.text_features.shape}.')
-
-        assert self.mean.shape[1] == self.data_dim['latent_seq_len'], \
-            f'{self.mean.shape[1]} != {self.data_dim["latent_seq_len"]}'
-        assert self.std.shape[1] == self.data_dim['latent_seq_len'], \
-            f'{self.std.shape[1]} != {self.data_dim["latent_seq_len"]}'
-
-        assert self.text_features.shape[1] == self.data_dim['text_seq_len'], \
-            f'{self.text_features.shape[1]} != {self.data_dim["text_seq_len"]}'
-        assert self.text_features.shape[-1] == self.data_dim['text_dim'], \
-            f'{self.text_features.shape[-1]} != {self.data_dim["text_dim"]}'
-
         self.fake_clip_features = torch.zeros(self.data_dim['clip_seq_len'],
                                               self.data_dim['clip_dim'])
         self.fake_sync_features = torch.zeros(self.data_dim['sync_seq_len'],

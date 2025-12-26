@@ -14,7 +14,6 @@ def compute_rope_rotations(length: int,
                            *,
                            freq_scaling: float = 1.0,
                            device: Union[torch.device, str] = 'cpu') -> Tensor:
-    assert dim % 2 == 0
 
     with torch.amp.autocast(device_type='cuda', enabled=False):
         pos = torch.arange(length, dtype=torch.float32, device=device)

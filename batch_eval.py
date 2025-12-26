@@ -1,4 +1,3 @@
-import logging
 import os
 from pathlib import Path
 
@@ -21,8 +20,6 @@ torch.backends.cudnn.allow_tf32 = True
 
 local_rank = int(os.environ['LOCAL_RANK'])
 world_size = int(os.environ['WORLD_SIZE'])
-log = logging.getLogger()
-
 
 @torch.inference_mode()
 @hydra.main(version_base='1.3.2', config_path='config', config_name='eval_config.yaml')
@@ -47,11 +44,7 @@ def main(cfg: DictConfig):
     seq_cfg.duration = cfg.duration_s
     net: MMAudio = get_my_mmaudio(cfg.model).to(device).eval()
     net.load_weights(torch.load(model.model_path, map_location=device, weights_only=True))
-    log.info(f'Loaded weights from {model.model_path}')
     net.update_seq_lengths(seq_cfg.latent_seq_len, seq_cfg.clip_seq_len, seq_cfg.sync_seq_len)
-    log.info(f'Latent seq len: {seq_cfg.latent_seq_len}')
-    log.info(f'Clip seq len: {seq_cfg.clip_seq_len}')
-    log.info(f'Sync seq len: {seq_cfg.sync_seq_len}')
 
     # misc setup
     rng = torch.Generator(device=device)
@@ -97,7 +90,6 @@ def distributed_setup():
     distributed.init_process_group(backend="nccl")
     local_rank = distributed.get_rank()
     world_size = distributed.get_world_size()
-    log.info(f'Initialized: local_rank={local_rank}, world_size={world_size}')
     return local_rank, world_size
 
 

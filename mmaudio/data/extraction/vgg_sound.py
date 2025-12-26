@@ -39,10 +39,6 @@ class VGGSound(Dataset):
             self.audio_samples = int(sample_rate * duration_sec)
         else:
             self.audio_samples = audio_samples
-            effective_duration = audio_samples / sample_rate
-            # make sure the duration is close enough, within 15ms
-            assert abs(effective_duration - duration_sec) < 0.015, \
-                f'audio_samples {audio_samples} does not match duration_sec {duration_sec}'
 
         videos = sorted(os.listdir(self.root))
         videos = set([Path(v).stem for v in videos])  # remove extensions

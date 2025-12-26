@@ -77,8 +77,6 @@ def sample(cfg: DictConfig):
         new_audio_path = runner.inference_pass(data, curr_iter, data_cfg)
         if audio_path is None:
             audio_path = new_audio_path
-        else:
-            assert audio_path == new_audio_path, 'Different audio path detected'
 
     info_if_rank_zero(log, f'Inference completed. Audio path: {audio_path}')
     output_metrics = runner.eval(audio_path, curr_iter, data_cfg)

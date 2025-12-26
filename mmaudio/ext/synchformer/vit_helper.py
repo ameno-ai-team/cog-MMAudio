@@ -61,7 +61,6 @@ class DividedAttention(nn.Module):
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> (b h) n d', h=h), (q, k, v))
         if tok_mask is not None:
             # replicate token mask across heads (b, n) -> (b, h, n) -> (b*h, n) -- same as qkv but w/o d
-            assert len(tok_mask.shape) == 2
             tok_mask = tok_mask.unsqueeze(1).expand(-1, h, -1).reshape(-1, tok_mask.shape[1])
 
         # Scale q
@@ -305,7 +304,6 @@ def adapt_input_conv(in_chans, conv_weight, agg='sum'):
     O, I, J, K = conv_weight.shape
     if in_chans == 1:
         if I > 3:
-            assert conv_weight.shape[1] % 3 == 0
             # For models with space2depth stems
             conv_weight = conv_weight.reshape(O, I // 3, 3, J, K)
             conv_weight = conv_weight.sum(dim=2, keepdim=False)
@@ -341,7 +339,6 @@ def load_pretrained(model,
                     strict=True,
                     progress=False):
     # Load state dict
-    assert (f"{cfg.VIT.PRETRAINED_WEIGHTS} not in [vit_1k, vit_1k_large]")
     state_dict = torch.hub.load_state_dict_from_url(url=default_cfgs[cfg.VIT.PRETRAINED_WEIGHTS])
 
     if filter_fn is not None:

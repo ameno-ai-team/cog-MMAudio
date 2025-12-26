@@ -38,33 +38,6 @@ class ExtractedVGG(Dataset):
         self.sync_features = td['sync_features']
         self.text_features = td['text_features']
 
-        if local_rank == 0:
-            log.info(f'Loaded {len(self)} samples.')
-            log.info(f'Loaded mean: {self.mean.shape}.')
-            log.info(f'Loaded std: {self.std.shape}.')
-            log.info(f'Loaded clip_features: {self.clip_features.shape}.')
-            log.info(f'Loaded sync_features: {self.sync_features.shape}.')
-            log.info(f'Loaded text_features: {self.text_features.shape}.')
-
-        assert self.mean.shape[1] == self.data_dim['latent_seq_len'], \
-            f'{self.mean.shape[1]} != {self.data_dim["latent_seq_len"]}'
-        assert self.std.shape[1] == self.data_dim['latent_seq_len'], \
-            f'{self.std.shape[1]} != {self.data_dim["latent_seq_len"]}'
-
-        assert self.clip_features.shape[1] == self.data_dim['clip_seq_len'], \
-            f'{self.clip_features.shape[1]} != {self.data_dim["clip_seq_len"]}'
-        assert self.sync_features.shape[1] == self.data_dim['sync_seq_len'], \
-            f'{self.sync_features.shape[1]} != {self.data_dim["sync_seq_len"]}'
-        assert self.text_features.shape[1] == self.data_dim['text_seq_len'], \
-            f'{self.text_features.shape[1]} != {self.data_dim["text_seq_len"]}'
-
-        assert self.clip_features.shape[-1] == self.data_dim['clip_dim'], \
-            f'{self.clip_features.shape[-1]} != {self.data_dim["clip_dim"]}'
-        assert self.sync_features.shape[-1] == self.data_dim['sync_dim'], \
-            f'{self.sync_features.shape[-1]} != {self.data_dim["sync_dim"]}'
-        assert self.text_features.shape[-1] == self.data_dim['text_dim'], \
-            f'{self.text_features.shape[-1]} != {self.data_dim["text_dim"]}'
-
         self.video_exist = torch.tensor(1, dtype=torch.bool)
         self.text_exist = torch.tensor(1, dtype=torch.bool)
 

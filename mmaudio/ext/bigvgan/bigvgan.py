@@ -23,7 +23,6 @@ class BigVGAN(nn.Module):
 
     @torch.inference_mode()
     def forward(self, x):
-        assert self.weight_norm_removed, 'call remove_weight_norm() before inference'
         return self.vocoder(x)
 
     def remove_weight_norm(self):

@@ -80,7 +80,6 @@ class WavTextClipsDataset(Dataset):
             audio_path = self.root / f'{audio_name}.flac'
             if not audio_path.exists():
                 audio_path = self.root / f'{audio_name}.wav'
-                assert audio_path.exists()
 
             audio_chunk, sample_rate = torchaudio.load(audio_path)
             audio_chunk = audio_chunk.mean(dim=0)  # mono

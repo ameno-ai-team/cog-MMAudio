@@ -52,42 +52,35 @@ class ImageInfo:
         return self.original_frame.shape[1]
 
 
-def read_frames(video_path: Path, list_of_fps: list[float], start_sec: float, end_sec: float,
-                need_all_frames: bool) -> tuple[list[np.ndarray], list[np.ndarray], Fraction]:
-    output_frames = [[] for _ in list_of_fps]
-    next_frame_time_for_each_fps = [0.0 for _ in list_of_fps]
-    time_delta_for_each_fps = [1 / fps for fps in list_of_fps]
+def read_frames(video_path: Path, end_sec: float) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    output_frames = [[], []]
+    next_frame_time_for_each_fps = [0.0, 0.0]
+    time_delta_for_each_fps = [1/8.0, 1/25.0]
     all_frames = []
 
     # container = av.open(video_path)
     with av.open(video_path) as container:
         stream = container.streams.video[0]
-        fps = stream.guessed_rate
         stream.thread_type = 'AUTO'
         for packet in container.demux(stream):
             for frame in packet.decode():
                 frame_time = frame.time
-                if frame_time < start_sec:
+                if frame_time < 0:
                     continue
                 if frame_time > end_sec:
                     break
 
-                frame_np = None
-                if need_all_frames:
-                    frame_np = frame.to_ndarray(format='rgb24')
-                    all_frames.append(frame_np)
+                frame_np = frame.to_ndarray(format='rgb24')
+                all_frames.append(frame_np)
 
-                for i, _ in enumerate(list_of_fps):
+                for i in range(2):
                     this_time = frame_time
                     while this_time >= next_frame_time_for_each_fps[i]:
-                        if frame_np is None:
-                            frame_np = frame.to_ndarray(format='rgb24')
-
                         output_frames[i].append(frame_np)
                         next_frame_time_for_each_fps[i] += time_delta_for_each_fps[i]
 
     output_frames = [np.stack(frames) for frames in output_frames]
-    return output_frames, all_frames, fps
+    return output_frames, all_frames
 
 
 def reencode_with_audio(video_info: VideoInfo, output_path: Path, audio: torch.Tensor,

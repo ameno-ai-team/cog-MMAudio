@@ -85,10 +85,8 @@ class FeaturesUtils(nn.Module):
 
     @torch.inference_mode()
     def encode_video_with_clip(self, x: torch.Tensor, batch_size: int = -1) -> torch.Tensor:
-        assert self.clip_model is not None, 'CLIP is not loaded'
         # x: (B, T, C, H, W) H/W: 384
         b, t, c, h, w = x.shape
-        assert c == 3 and h == 384 and w == 384
         x = self.clip_preprocess(x)
         x = rearrange(x, 'b t c h w -> (b t) c h w')
         outputs = []
@@ -103,11 +101,8 @@ class FeaturesUtils(nn.Module):
 
     @torch.inference_mode()
     def encode_video_with_sync(self, x: torch.Tensor, batch_size: int = -1) -> torch.Tensor:
-        assert self.synchformer is not None, 'Synchformer is not loaded'
         # x: (B, T, C, H, W) H/W: 384
-
         b, t, c, h, w = x.shape
-        assert c == 3 and h == 224 and w == 224
 
         # partition the video
         segment_size = 16
@@ -130,15 +125,12 @@ class FeaturesUtils(nn.Module):
 
     @torch.inference_mode()
     def encode_text(self, text: list[str]) -> torch.Tensor:
-        assert self.clip_model is not None, 'CLIP is not loaded'
-        assert self.tokenizer is not None, 'Tokenizer is not loaded'
         # x: (B, L)
         tokens = self.tokenizer(text).to(self.device)
         return self.clip_model.encode_text(tokens, normalize=True)
 
     @torch.inference_mode()
     def encode_audio(self, x) -> DiagonalGaussianDistribution:
-        assert self.tod is not None, 'VAE is not loaded'
         # x: (B * L)
         mel = self.mel_converter(x)
         dist = self.tod.encode(mel)
@@ -147,12 +139,10 @@ class FeaturesUtils(nn.Module):
 
     @torch.inference_mode()
     def vocode(self, mel: torch.Tensor) -> torch.Tensor:
-        assert self.tod is not None, 'VAE is not loaded'
         return self.tod.vocode(mel)
 
     @torch.inference_mode()
     def decode(self, z: torch.Tensor) -> torch.Tensor:
-        assert self.tod is not None, 'VAE is not loaded'
         return self.tod.decode(z.transpose(1, 2))
 
     @property

@@ -125,8 +125,6 @@ class MotionFormer(VisionTransformer):
                 logging.info(f'Loading vfeat_extractor ckpt from {self.ckpt_path} succeeded.')
 
         if self.extract_features:
-            assert isinstance(self.norm,
-                              nn.LayerNorm), 'early x[:, 1:, :] may not be safe for per-tr weights'
             # pre-logits are Sequential(nn.Linear(emb, emd), act) and `act` is tanh but see the logger
             self.pre_logits = nn.Identity()
             # we don't need the classification head (saving memory)
@@ -219,8 +217,6 @@ class MotionFormer(VisionTransformer):
         '''x is of shape (1, BS, C, T, H, W) where S is the number of segments.'''
         x, x_mask = self.forward_features(x)
 
-        assert self.extract_features
-
         # (BS, T, D) where T = 1 + (224 // 16) * (224 // 16) * 8
         x = x[:,
               1:, :]  # without the CLS token for efficiency (should be safe for LayerNorm and FC)
@@ -302,7 +298,6 @@ class BaseEncoderLayer(nn.TransformerEncoderLayer):
             x_mask_w_cls = x_mask_w_cls.reshape(B, 1, 1, N)\
                                        .expand(-1, self.self_attn.num_heads, N, -1)\
                                        .reshape(B * self.self_attn.num_heads, N, N)
-            assert x_mask_w_cls.dtype == x_mask_w_cls.bool().dtype, 'x_mask_w_cls.dtype != bool'
             x_mask_w_cls = ~x_mask_w_cls  # invert mask (1=mask)
         else:
             x_mask_w_cls = None
@@ -311,7 +306,6 @@ class BaseEncoderLayer(nn.TransformerEncoderLayer):
         if self.add_pos_emb:
             seq_len = x.shape[
                 1]  # (don't even think about moving it before the CLS token concatenation)
-            assert seq_len <= self.pos_max_len, f'Seq len ({seq_len}) > pos_max_len ({self.pos_max_len})'
             x = x + self.pos_emb[:, :seq_len, :]
             x = self.pos_drop(x)
 

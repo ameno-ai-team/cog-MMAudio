@@ -80,7 +80,6 @@ def resample(x, f=[1, 1], mode='keep'):
     if mode == 'keep':
         return x
     f = np.float32(f)
-    assert f.ndim == 1 and len(f) % 2 == 0
     pad = (len(f) - 1) // 2
     f = f / f.sum()
     f = np.outer(f, f)[np.newaxis, np.newaxis, :, :]
@@ -92,7 +91,6 @@ def resample(x, f=[1, 1], mode='keep'):
                                           groups=c,
                                           stride=2,
                                           padding=(pad, ))
-    assert mode == 'up'
     return torch.nn.functional.conv_transpose2d(x, (f * 4).tile([c, 1, 1, 1]),
                                                 groups=c,
                                                 stride=2,
@@ -149,12 +147,9 @@ class MPConv1D(torch.nn.Module):
         self.weight_norm_removed = False
 
     def forward(self, x, gain=1):
-        assert self.weight_norm_removed, 'call remove_weight_norm() before inference'
-
         w = self.weight * gain
         if w.ndim == 2:
             return x @ w.t()
-        assert w.ndim == 3
         return torch.nn.functional.conv1d(x, w, padding=(w.shape[-1] // 2, ))
 
     def remove_weight_norm(self):

@@ -1,5 +1,4 @@
 import gc
-import logging
 from argparse import ArgumentParser
 from datetime import datetime
 from fractions import Fraction
@@ -19,15 +18,12 @@ from mmaudio.model.utils.features_utils import FeaturesUtils
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
-log = logging.getLogger()
-
 device = 'cpu'
 if torch.cuda.is_available():
     device = 'cuda'
 elif torch.backends.mps.is_available():
     device = 'mps'
-else:
-    log.warning('CUDA/MPS are not available, running on CPU')
+
 dtype = torch.bfloat16
 
 model: ModelConfig = all_model_cfg['large_44k_v2']
@@ -42,7 +38,6 @@ def get_model() -> tuple[MMAudio, FeaturesUtils, SequenceConfig]:
 
     net: MMAudio = get_my_mmaudio(model.model_name).to(device, dtype).eval()
     net.load_weights(torch.load(model.model_path, map_location=device, weights_only=True))
-    log.info(f'Loaded weights from {model.model_path}')
 
     feature_utils = FeaturesUtils(tod_vae_ckpt=model.vae_path,
                                   synchformer_ckpt=model.synchformer_ckpt,

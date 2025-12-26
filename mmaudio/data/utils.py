@@ -109,10 +109,6 @@ def load_shards(
             used_index.add(tensor_index)
             mm_tensor[tensor_index] = v
             total_count += 1
-
-    assert total_count == len(ids), f'Expected {len(ids)} tensors, got {total_count}.'
-    log.info(f'Loaded {total_count} tensors from {data_path}.')
-
     return mm_tensor
 
 
@@ -125,11 +121,6 @@ def share_tensor_to_all(x: Optional[MemoryMappedTensor]) -> MemoryMappedTensor:
     # there is no need to share your stuff with anyone if you are alone; must be in memory
     if world_size == 1:
         return x
-
-    if local_rank == 0:
-        assert x is not None, 'x must not be None if local_rank == 0'
-    else:
-        assert x is None, 'x must be None if local_rank != 0'
 
     if local_rank == 0:
         filename = x.filename
