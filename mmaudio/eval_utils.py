@@ -82,6 +82,51 @@ _SYNC_TRANSFORM = v2.Compose([
     v2.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
 ])
 
+def load_video_comfy(images, duration_sec: float) -> VideoInfo:
+    num_frames = len(images)
+    
+    output_indices = [[], []]
+    target_fps = [8, 25]
+    
+    for frame_idx in range(num_frames):
+        frame_time = frame_idx * 0.04
+        
+        for i in range(2):
+            expected_frame_idx = int(frame_time * target_fps[i])
+            if expected_frame_idx >= len(output_indices[i]):
+                output_indices[i].append(frame_idx)
+    
+    all_frames = images.cpu().numpy()
+    output_frames = [all_frames[indices] for indices in output_indices]
+
+    clip_chunk, sync_chunk = output_frames
+    clip_chunk = torch.from_numpy(clip_chunk).permute(0, 3, 1, 2).to('cuda')
+    sync_chunk = torch.from_numpy(sync_chunk).permute(0, 3, 1, 2).to('cuda')
+
+    clip_frames = _CLIP_TRANSFORM(clip_chunk)
+    sync_frames = _SYNC_TRANSFORM(sync_chunk)
+
+    clip_length_sec = clip_frames.shape[0] / 8
+    sync_length_sec = sync_frames.shape[0] / 25
+
+    if clip_length_sec < duration_sec:
+        duration_sec = clip_length_sec
+
+    if sync_length_sec < duration_sec:
+        duration_sec = sync_length_sec
+
+    clip_frames = clip_frames[:int(8 * duration_sec)]
+    sync_frames = sync_frames[:int(25 * duration_sec)]
+
+    video_info = VideoInfo(
+        duration_sec=duration_sec,
+        fps=25,
+        clip_frames=clip_frames,
+        sync_frames=sync_frames,
+        all_frames=all_frames
+    )
+    return video_info
+
 def load_video(video_path: Path, duration_sec: float) -> VideoInfo:
     output_frames, all_frames = read_frames(video_path, duration_sec)
 
